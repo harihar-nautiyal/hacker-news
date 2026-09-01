@@ -20,11 +20,13 @@ pub struct Story {
 #[derive(Debug, Clone, Serialize, TypedBuilder)]
 pub struct StorySummary {
     pub id: String,
+    pub rank: usize,
     pub title: String,
     pub url: Option<String>,
     pub domain: Option<String>,
     pub author: String,
     pub points: i64,
+    pub num_comments: i64,
     pub time_ago: String,
     pub has_text: bool,
     pub is_external: bool,

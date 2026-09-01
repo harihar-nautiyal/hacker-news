@@ -8,7 +8,7 @@ pub struct Comment {
     pub text: String,
     pub time_ago: String,
     pub is_op: bool,
-    pub depth: bool,
+    pub depth: usize,
     pub total_replies: usize,
     pub children: Vec<Comment>,
 }
