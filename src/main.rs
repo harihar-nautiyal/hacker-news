@@ -2,19 +2,29 @@ use actix_web::{
     App, HttpResponse, HttpServer, Responder, get,
     web::{self, Data},
 };
-use maud::html;
-use maud_htmx::{AppState, components::ui::button::Button, routes::document::Document};
+use maud_htmx::{
+    AppState,
+    models::FeedType,
+    routes::index::Index,
+};
 use rust_embed::RustEmbed;
 use std::io::Result;
 
 #[get("/version")]
 async fn version() -> impl Responder {
-    let content = html! {
-        p { "Hello world" }
-        (Button("Click me"))
-    };
-
-    Document("Hello world", content)
+    Index::builder()
+        .title("Hello world".to_string())
+        .active_feed(FeedType::Top)
+        .has_active_detail(false)
+        .category_icon("".to_string())
+        .category_title("Top".to_string())
+        .feed_type(FeedType::Top)
+        .search_query("".to_string())
+        .stories(vec![])
+        .next_page(1)
+        .active_detail(None)
+        .build()
+        .render()
 }
 
 #[derive(RustEmbed)]

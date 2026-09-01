@@ -1153,6 +1153,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "async-trait",
+ "bitflags",
  "dashmap",
  "maud",
  "mime_guess",
