@@ -1,31 +1,19 @@
 use actix_web::{
     App, HttpResponse, HttpServer, Responder, get,
+    middleware::Compress,
     web::{self, Data},
 };
 use maud_htmx::{
     AppState,
-    models::FeedType,
-    routes::index::Index,
+    routes::{
+        feed::{get_feed, get_feed_page},
+        index::index,
+        item::get_item_detail,
+        search::search_stories,
+    },
 };
 use rust_embed::RustEmbed;
 use std::io::Result;
-
-#[get("/version")]
-async fn version() -> impl Responder {
-    Index::builder()
-        .title("Hello world".to_string())
-        .active_feed(FeedType::Top)
-        .has_active_detail(false)
-        .category_icon("".to_string())
-        .category_title("Top".to_string())
-        .feed_type(FeedType::Top)
-        .search_query("".to_string())
-        .stories(vec![])
-        .next_page(1)
-        .active_detail(None)
-        .build()
-        .render()
-}
 
 #[derive(RustEmbed)]
 #[folder = "static/"]
@@ -53,13 +41,24 @@ async fn main() -> Result<()> {
     let host = "127.0.0.1";
     let port = 8080;
 
+    println!("=============================================");
+    println!("  🚀 Hacker News Maud HTMX SPA Starting     ");
+    println!("  Listening on http://{}:{}", host, port);
+    println!("=============================================");
+
     HttpServer::new(move || {
         App::new()
+            .wrap(Compress::default())
             .app_data(service.clone())
-            .service(version)
             .service(serve_assets)
+            .service(index)
+            .service(get_feed)
+            .service(get_feed_page)
+            .service(search_stories)
+            .service(get_item_detail)
     })
     .bind((host, port))?
     .run()
     .await
 }
+

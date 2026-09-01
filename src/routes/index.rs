@@ -1,6 +1,12 @@
+use actix_web::{
+    Responder, get,
+    web::{Data, Query},
+};
 use maud::{DOCTYPE, Markup, html};
+use serde::Deserialize;
 use typed_builder::TypedBuilder;
 
+use crate::AppState;
 use crate::components::{
     empty_detail::empty_detail,
     head::head,
@@ -11,6 +17,16 @@ use crate::components::{
     story_detail::story_detail,
 };
 use crate::models::{FeedType, Story, StorySummary};
+use crate::utils::feed::Feed;
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct FeedQuery {
+    #[serde(rename = "type")]
+    pub feed_type: Option<String>,
+    pub page: Option<u32>,
+    pub query: Option<String>,
+    pub refresh: Option<bool>,
+}
 
 #[derive(Debug, Clone, TypedBuilder)]
 pub struct Index {
@@ -42,8 +58,6 @@ impl Index {
                     (head(&self.title))
                 }
                 body class="h-full flex flex-col overflow-hidden bg-neutral-950 font-sans text-neutral-100 selection:bg-amber-500 selection:text-neutral-950" {
-                    div id="global-progress" {}
-
                     (navbar(self.active_feed, &self.search_query))
 
                     (mobile_nav(self.active_feed))
@@ -89,4 +103,27 @@ impl Index {
             }
         }
     }
+}
+
+#[get("/")]
+pub async fn index(service: Data<AppState>, query: Query<FeedQuery>) -> impl Responder {
+    let feed_kind = FeedType::from_str(query.feed_type.as_deref().unwrap_or("top"));
+    let stories = service
+        .get_feed(feed_kind, 0, query.refresh.unwrap_or(false))
+        .await
+        .unwrap_or_default();
+
+    Index::builder()
+        .title(format!("{} | Hacker News SPA", feed_kind.label()))
+        .active_feed(feed_kind)
+        .has_active_detail(false)
+        .category_icon(feed_kind.icon().to_string())
+        .category_title(feed_kind.label().to_string())
+        .feed_type(feed_kind)
+        .search_query(String::new())
+        .stories(stories)
+        .next_page(1)
+        .active_detail(None)
+        .build()
+        .render()
 }

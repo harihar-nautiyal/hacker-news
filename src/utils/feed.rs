@@ -99,8 +99,38 @@ impl Feed for AppState {
     }
 
     async fn fetch(&self, url: &str, page: u32) -> Result<Vec<StorySummary>> {
-        let response = self.client.get(url).send().await?;
-        let search_res: AlgoliaSearchResponse = response.json().await?;
+        let mut attempts = 0;
+        let search_res: AlgoliaSearchResponse = loop {
+            attempts += 1;
+            let response = self.client.get(url).send().await;
+            match response {
+                Ok(resp) if resp.status().is_success() => {
+                    match resp.json::<AlgoliaSearchResponse>().await {
+                        Ok(data) => break data,
+                        Err(_e) if attempts < 3 => {
+                            tokio::time::sleep(std::time::Duration::from_millis(250 * attempts)).await;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
+                }
+                Ok(resp) if attempts < 3 && (resp.status().is_server_error() || resp.status() == reqwest::StatusCode::TOO_MANY_REQUESTS) => {
+                    tokio::time::sleep(std::time::Duration::from_millis(300 * attempts)).await;
+                    continue;
+                }
+                Ok(resp) => {
+                    let status = resp.status();
+                    let text = resp.text().await.unwrap_or_default();
+                    anyhow::bail!("Algolia API error {}: {}", status, text);
+                }
+                Err(_e) if attempts < 3 => {
+                    tokio::time::sleep(std::time::Duration::from_millis(250 * attempts)).await;
+                    continue;
+                }
+                Err(e) => return Err(e.into()),
+            }
+        };
+
         let rank_offset = (page as usize) * 30;
         let summaries: Vec<StorySummary> = search_res
             .hits
@@ -142,8 +172,38 @@ impl Feed for AppState {
         }
 
         let url = format!("https://hn.algolia.com/api/v1/items/{}", id);
-        let response = self.client.get(&url).send().await?;
-        let item: AlgoliaItemResponse = response.json().await?;
+        let mut attempts = 0;
+        let item: AlgoliaItemResponse = loop {
+            attempts += 1;
+            let response = self.client.get(&url).send().await;
+            match response {
+                Ok(resp) if resp.status().is_success() => {
+                    match resp.json::<AlgoliaItemResponse>().await {
+                        Ok(data) => break data,
+                        Err(_e) if attempts < 3 => {
+                            tokio::time::sleep(std::time::Duration::from_millis(250 * attempts)).await;
+                            continue;
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
+                }
+                Ok(resp) if attempts < 3 && (resp.status().is_server_error() || resp.status() == reqwest::StatusCode::TOO_MANY_REQUESTS) => {
+                    tokio::time::sleep(std::time::Duration::from_millis(300 * attempts)).await;
+                    continue;
+                }
+                Ok(resp) => {
+                    let status = resp.status();
+                    let text = resp.text().await.unwrap_or_default();
+                    anyhow::bail!("Algolia API error {}: {}", status, text);
+                }
+                Err(_e) if attempts < 3 => {
+                    tokio::time::sleep(std::time::Duration::from_millis(250 * attempts)).await;
+                    continue;
+                }
+                Err(e) => return Err(e.into()),
+            }
+        };
+
         let author = item.author.as_deref().unwrap_or("anonymous");
         let (comments, total_comments) = build_comment_tree(&item.children, &author, 0);
         let story: Story = Story::builder()
