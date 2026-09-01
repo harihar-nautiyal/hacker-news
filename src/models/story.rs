@@ -29,3 +29,9 @@ pub struct StorySummary {
     pub has_text: bool,
     pub is_external: bool,
 }
+
+impl StorySummary {
+    pub fn hn_url(&self) -> String {
+        format!("https://news.ycombinator.com/item?id={}", self.id)
+    }
+}
