@@ -8,7 +8,7 @@ use maud_htmx::{
     routes::{
         feed::{get_feed, get_feed_page},
         index::index,
-        item::get_item_detail,
+        item::{get_item_comments, get_item_detail},
         search::search_stories,
     },
     storage::DbStore,
@@ -154,6 +154,7 @@ async fn main() -> Result<()> {
             .service(get_feed_page)
             .service(search_stories)
             .service(get_item_detail)
+            .service(get_item_comments)
     })
     .bind((host, port))?
     .run()

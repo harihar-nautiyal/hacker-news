@@ -133,11 +133,12 @@ async fn test_item_detail_routes() {
     let app = test::init_service(
         App::new()
             .app_data(Data::from(state.clone()))
-            .service(get_item_detail),
+            .service(get_item_detail)
+            .service(maud_htmx::routes::item::get_item_comments),
     )
     .await;
 
-    // 1. HTMX request returns partial
+    // 1. HTMX request returns partial with instant header and lazy comments trigger
     let htmx_req = test::TestRequest::get()
         .uri("/item/101")
         .insert_header(("hx-request", "true"))
@@ -146,17 +147,29 @@ async fn test_item_detail_routes() {
     assert!(htmx_resp.status().is_success());
     let htmx_body = String::from_utf8_lossy(&test::read_body(htmx_resp).await).to_string();
     assert!(htmx_body.contains("Show HN: High-performance Rust App #101"));
-    assert!(htmx_body.contains("Nice test!"));
+    assert!(htmx_body.contains("hx-get=\"/item/101/comments\""));
+    assert!(htmx_body.contains("hx-trigger=\"load\""));
     // HTMX partial does not contain <!DOCTYPE html>
     assert!(!htmx_body.contains("<!DOCTYPE html>"));
 
-    // 2. Direct browser navigation returns full page
+    // 2. Lazy comments endpoint returns rendered comments
+    let comments_req = test::TestRequest::get()
+        .uri("/item/101/comments")
+        .to_request();
+    let comments_resp = test::call_service(&app, comments_req).await;
+    assert!(comments_resp.status().is_success());
+    let comments_body = String::from_utf8_lossy(&test::read_body(comments_resp).await).to_string();
+    assert!(comments_body.contains("Nice test!"));
+    assert!(comments_body.contains("tester"));
+
+    // 3. Direct browser navigation returns full SSR page with complete comments (100% SEO)
     let full_req = test::TestRequest::get().uri("/item/101").to_request();
     let full_resp = test::call_service(&app, full_req).await;
     assert!(full_resp.status().is_success());
     let full_body = String::from_utf8_lossy(&test::read_body(full_resp).await).to_string();
     assert!(full_body.contains("<!DOCTYPE html>"));
     assert!(full_body.contains("Show HN: High-performance Rust App #101"));
+    assert!(full_body.contains("Nice test!"));
 }
 
 #[actix_web::test]
