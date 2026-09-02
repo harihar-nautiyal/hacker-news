@@ -8,12 +8,7 @@ pub fn comments_section(detail: &Story) -> Markup {
     html! {
         div id="comments-container" class="p-6 md:p-8 flex-1" {
             div class="flex items-center justify-between pb-4 mb-4 border-b border-neutral-800/80" {
-                div class="flex items-center gap-2" {
-                    h2 class="text-base font-bold text-neutral-200" { "Discussion" }
-                    span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-neutral-800 text-neutral-300 border border-neutral-700 font-mono" {
-                        (detail.num_comments)
-                    }
-                }
+                h2 class="text-base font-bold text-neutral-200" { "Discussion" }
 
                 @if detail.num_comments > 0 {
                     div class="flex items-center gap-2" {

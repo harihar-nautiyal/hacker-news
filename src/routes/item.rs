@@ -49,9 +49,10 @@ pub async fn get_item_detail(
     let is_htmx = req.headers().contains_key("hx-request");
 
     if is_htmx {
-        // HTMX SPA navigation: Render header instantly with lazy comments skeleton
+        // HTMX SPA navigation: Render header instantly with lazy comments placeholder
         HttpResponse::Ok()
             .content_type("text/html; charset=utf-8")
+            .insert_header(("Cache-Control", "private, max-age=300, stale-while-revalidate=60"))
             .body(story_detail_lazy(&detail).into_string())
     } else {
         // Direct browser visit / Search Engine Crawler: render full page with complete comments (100% SEO)
@@ -77,6 +78,7 @@ pub async fn get_item_detail(
 
         HttpResponse::Ok()
             .content_type("text/html; charset=utf-8")
+            .insert_header(("Cache-Control", "public, max-age=120, stale-while-revalidate=60"))
             .body(index_page.render().into_string())
     }
 }
@@ -94,6 +96,7 @@ pub async fn get_item_comments(
     match service.get_item(id, force_refresh).await {
         Ok(detail) => HttpResponse::Ok()
             .content_type("text/html; charset=utf-8")
+            .insert_header(("Cache-Control", "private, max-age=300, stale-while-revalidate=60"))
             .body(comments_section(&detail).into_string()),
         Err(err) => HttpResponse::InternalServerError()
             .content_type("text/html; charset=utf-8")

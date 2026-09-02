@@ -145,6 +145,7 @@ async fn test_item_detail_routes() {
         .to_request();
     let htmx_resp = test::call_service(&app, htmx_req).await;
     assert!(htmx_resp.status().is_success());
+    assert!(htmx_resp.headers().contains_key("cache-control"));
     let htmx_body = String::from_utf8_lossy(&test::read_body(htmx_resp).await).to_string();
     assert!(htmx_body.contains("Show HN: High-performance Rust App #101"));
     assert!(htmx_body.contains("hx-get=\"/item/101/comments\""));
@@ -152,12 +153,13 @@ async fn test_item_detail_routes() {
     // HTMX partial does not contain <!DOCTYPE html>
     assert!(!htmx_body.contains("<!DOCTYPE html>"));
 
-    // 2. Lazy comments endpoint returns rendered comments
+    // 2. Lazy comments endpoint returns rendered comments with client Cache-Control
     let comments_req = test::TestRequest::get()
         .uri("/item/101/comments")
         .to_request();
     let comments_resp = test::call_service(&app, comments_req).await;
     assert!(comments_resp.status().is_success());
+    assert!(comments_resp.headers().contains_key("cache-control"));
     let comments_body = String::from_utf8_lossy(&test::read_body(comments_resp).await).to_string();
     assert!(comments_body.contains("Nice test!"));
     assert!(comments_body.contains("tester"));
@@ -166,6 +168,7 @@ async fn test_item_detail_routes() {
     let full_req = test::TestRequest::get().uri("/item/101").to_request();
     let full_resp = test::call_service(&app, full_req).await;
     assert!(full_resp.status().is_success());
+    assert!(full_resp.headers().contains_key("cache-control"));
     let full_body = String::from_utf8_lossy(&test::read_body(full_resp).await).to_string();
     assert!(full_body.contains("<!DOCTYPE html>"));
     assert!(full_body.contains("Show HN: High-performance Rust App #101"));
