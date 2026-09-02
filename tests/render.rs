@@ -21,7 +21,7 @@ fn test_index_render_without_detail() {
         .build();
 
     let index_page = Index::builder()
-        .title("Top | Hacker News SPA".to_string())
+        .title("Top Stories | Hacker News SPA".to_string())
         .active_feed(FeedType::Top)
         .has_active_detail(false)
         .category_icon("🔥".to_string())
@@ -36,6 +36,10 @@ fn test_index_render_without_detail() {
     let html = index_page.render().into_string();
     assert!(html.contains("Test Story Title"));
     assert!(html.contains("No Story Selected"));
+    assert!(html.contains("meta name=\"description\""));
+    assert!(html.contains("og:site_name"));
+    assert!(html.contains("schema.org"));
+    assert!(html.contains("WebSite"));
 }
 
 #[test]
@@ -93,6 +97,9 @@ fn test_index_render_with_detail() {
     let html = index_page.render().into_string();
     assert!(html.contains("Test Story Detail"));
     assert!(html.contains("Great story!"));
+    assert!(html.contains("meta name=\"description\""));
+    assert!(html.contains("DiscussionForumPosting"));
+    assert!(html.contains("rel=\"canonical\" href=\"/item/12345\""));
 }
 
 #[test]
@@ -173,5 +180,3 @@ fn test_index_includes_scripts() {
     assert!(html.contains("/static/scripts/app.js"));
     assert!(html.contains("id=\"detail-progress\""));
 }
-
-

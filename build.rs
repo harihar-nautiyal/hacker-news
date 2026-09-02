@@ -18,10 +18,8 @@ fn main() {
         panic!("Input CSS file not found at '{input_css}'");
     }
 
-    let is_release = std::env::var("PROFILE").map(|p| p == "release").unwrap_or(false);
-
     // Try finding the tailwindcss binary or runner
-    let build_success = run_tailwind_build(input_css, output_css, is_release);
+    let build_success = run_tailwind_build(input_css, output_css);
 
     if !build_success {
         panic!(
@@ -36,7 +34,7 @@ fn main() {
     }
 }
 
-fn run_tailwind_build(input: &str, output: &str, is_release: bool) -> bool {
+fn run_tailwind_build(input: &str, output: &str) -> bool {
     let mut candidates: Vec<Command> = Vec::new();
 
     // Candidate 1: Local node_modules binary
@@ -47,20 +45,14 @@ fn run_tailwind_build(input: &str, output: &str, is_release: bool) -> bool {
     };
     if Path::new(local_bin).exists() {
         let mut cmd = Command::new(local_bin);
-        cmd.args(["-i", input, "-o", output]);
-        if is_release {
-            cmd.arg("--minify");
-        }
+        cmd.args(["-i", input, "-o", output, "--minify"]);
         candidates.push(cmd);
     }
 
     // Candidate 2: Global `tailwindcss` in PATH
     {
         let mut cmd = Command::new("tailwindcss");
-        cmd.args(["-i", input, "-o", output]);
-        if is_release {
-            cmd.arg("--minify");
-        }
+        cmd.args(["-i", input, "-o", output, "--minify"]);
         candidates.push(cmd);
     }
 
@@ -71,20 +63,14 @@ fn run_tailwind_build(input: &str, output: &str, is_release: bool) -> bool {
         } else {
             Command::new("npx")
         };
-        cmd.args(["@tailwindcss/cli", "-i", input, "-o", output]);
-        if is_release {
-            cmd.arg("--minify");
-        }
+        cmd.args(["@tailwindcss/cli", "-i", input, "-o", output, "--minify"]);
         candidates.push(cmd);
     }
 
     // Candidate 4: bunx @tailwindcss/cli
     {
         let mut cmd = Command::new("bunx");
-        cmd.args(["@tailwindcss/cli", "-i", input, "-o", output]);
-        if is_release {
-            cmd.arg("--minify");
-        }
+        cmd.args(["@tailwindcss/cli", "-i", input, "-o", output, "--minify"]);
         candidates.push(cmd);
     }
 

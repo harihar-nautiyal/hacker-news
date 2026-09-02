@@ -47,3 +47,22 @@ pub struct AlgoliaItemResponse {
     #[serde(default)]
     pub children: Vec<AlgoliaComment>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FirebaseItem {
+    pub id: i64,
+    pub deleted: Option<bool>,
+    #[serde(rename = "type")]
+    pub item_type: Option<String>,
+    pub by: Option<String>,
+    pub time: Option<i64>,
+    pub text: Option<String>,
+    pub dead: Option<bool>,
+    pub parent: Option<i64>,
+    #[serde(default)]
+    pub kids: Option<Vec<i64>>,
+    pub url: Option<String>,
+    pub score: Option<i64>,
+    pub title: Option<String>,
+    pub descendants: Option<usize>,
+}

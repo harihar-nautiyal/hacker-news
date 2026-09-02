@@ -7,8 +7,17 @@ pub fn navbar(active_feed: FeedType, search_query: &str) -> Markup {
     html! {
         header class="h-16 border-b border-neutral-800 bg-neutral-900/90 backdrop-blur sticky top-0 z-30 flex-shrink-0 flex items-center justify-between px-4 lg:px-6 gap-4" {
             div class="flex items-center gap-3" {
-                a class="flex items-center gap-2.5 group" href="/" hx-get="/feed?type=top" hx-target="#stories-container" hx-push-url="/" hx-preload="mouseover" onclick="setActiveFeed('top')" {
-                    div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center font-bold text-neutral-950 text-lg shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform" {
+                a
+                    class="flex items-center gap-2.5 group"
+                    href="/"
+                    aria-label="Hacker News Home"
+                    hx-get="/feed?type=top"
+                    hx-target="#stories-container"
+                    hx-push-url="/"
+                    hx-preload="mouseover"
+                    onclick="setActiveFeed('top')"
+                {
+                    div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center font-bold text-neutral-950 text-lg shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform" aria-hidden="true" {
                         "Y"
                     }
                     div class="hidden sm:block" {
@@ -34,7 +43,7 @@ pub fn navbar(active_feed: FeedType, search_query: &str) -> Markup {
                         class=(if is_active {
                             "nav-tab px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 bg-amber-500 text-neutral-950 font-semibold shadow"
                         } else {
-                            "nav-tab px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60"
+                            "nav-tab px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-neutral-300 hover:text-white hover:bg-neutral-800/60"
                         })
                         id=(format!("tab-{}", feed.as_str()))
                         role="tab"
@@ -47,7 +56,7 @@ pub fn navbar(active_feed: FeedType, search_query: &str) -> Markup {
                         hx-preload="mouseover"
                         onclick=(format!("setActiveFeed('{}')", feed.as_str()))
                     {
-                        span { (feed.icon()) }
+                        span aria-hidden="true" { (feed.icon()) }
                         span { (feed.label()) }
                     }
                 }

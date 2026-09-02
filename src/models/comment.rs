@@ -1,7 +1,7 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-#[derive(Debug, Clone, Serialize, TypedBuilder)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TypedBuilder)]
 pub struct Comment {
     pub id: i64,
     pub author: String,

@@ -21,7 +21,7 @@ pub fn mobile_nav(active_feed: FeedType) -> Markup {
                     class=(if is_active {
                         "nav-tab flex-shrink-0 px-3 py-1.5 rounded-lg bg-amber-500 text-neutral-950 font-bold"
                     } else {
-                        "nav-tab flex-shrink-0 px-3 py-1.5 rounded-lg text-neutral-400 bg-neutral-950 border border-neutral-800"
+                        "nav-tab flex-shrink-0 px-3 py-1.5 rounded-lg text-neutral-300 hover:text-white bg-neutral-950 border border-neutral-800"
                     })
                 {
                     (feed.icon()) " " (feed.label())

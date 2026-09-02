@@ -8,8 +8,8 @@ pub fn comment_node(comment: &Comment) -> Markup {
     html! {
         div class="comment-thread mt-3 text-sm" id=(format!("comment-{}", comment.id)) {
             details open class="group" {
-                summary class="flex items-center gap-2 cursor-pointer select-none text-xs text-neutral-400 py-1 px-1.5 rounded hover:bg-neutral-800/60 transition-colors list-none" {
-                    span class="inline-block transition-transform duration-150 transform text-neutral-500 group-open:rotate-90 text-[10px]" { "▶" }
+                summary class="flex items-center gap-2 cursor-pointer select-none text-xs text-neutral-300 py-1 px-1.5 rounded hover:bg-neutral-800/60 transition-colors list-none" aria-label=(format!("Comment thread by {}", comment.author)) {
+                    span class="inline-block transition-transform duration-150 transform text-neutral-400 group-open:rotate-90 text-[10px]" aria-hidden="true" { "▶" }
                     span class="font-semibold text-neutral-200 hover:text-amber-400 transition-colors" {
                         (comment.author)
                     }
@@ -18,10 +18,10 @@ pub fn comment_node(comment: &Comment) -> Markup {
                             "OP"
                         }
                     }
-                    span class="text-neutral-600" { "·" }
-                    span class="text-neutral-500 font-mono text-[11px]" { (comment.time_ago) }
+                    span class="text-neutral-500 select-none" aria-hidden="true" { "·" }
+                    span class="text-neutral-400 font-mono text-[11px]" { (comment.time_ago) }
                     @if comment.total_replies > 0 {
-                        span class="text-[11px] text-neutral-500 ml-auto hidden group-[&:not([open])]:inline-block font-mono bg-neutral-800/80 px-2 py-0.5 rounded-full border border-neutral-700/50" {
+                        span class="text-[11px] text-neutral-300 ml-auto hidden group-[&:not([open])]:inline-block font-mono bg-neutral-800/80 px-2 py-0.5 rounded-full border border-neutral-700/50" {
                             "+" (comment.total_replies) " replies hidden"
                         }
                     }

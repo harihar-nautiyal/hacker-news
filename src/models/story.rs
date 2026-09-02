@@ -1,8 +1,8 @@
 use crate::models::Comment;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-#[derive(Debug, Clone, Serialize, TypedBuilder)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TypedBuilder)]
 pub struct Story {
     pub id: i64,
     pub title: String,
@@ -17,7 +17,7 @@ pub struct Story {
     pub hn_url: String,
 }
 
-#[derive(Debug, Clone, Serialize, TypedBuilder)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TypedBuilder)]
 pub struct StorySummary {
     pub id: String,
     pub rank: usize,

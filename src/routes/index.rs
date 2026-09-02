@@ -51,11 +51,78 @@ impl Index {
             "flex-1 flex overflow-hidden relative mobile-view-list"
         };
 
+        let (title, description, canonical_url, og_type, structured_data) = match &self.active_detail {
+            Some(detail) => {
+                let title = format!("{} | Hacker News", detail.title);
+                let desc = format!(
+                    "{} - Hacker News discussion with {} points and {} comments submitted by @{}.",
+                    detail.title, detail.points, detail.num_comments, detail.author
+                );
+                let canonical = format!("/item/{}", detail.id);
+                let json_ld = serde_json::json!({
+                    "@context": "https://schema.org",
+                    "@type": "DiscussionForumPosting",
+                    "headline": detail.title,
+                    "url": format!("https://news.ycombinator.com/item?id={}", detail.id),
+                    "author": {
+                        "@type": "Person",
+                        "name": detail.author
+                    },
+                    "interactionStatistic": [
+                        {
+                            "@type": "InteractionCounter",
+                            "interactionType": "https://schema.org/LikeAction",
+                            "userInteractionCount": detail.points
+                        },
+                        {
+                            "@type": "InteractionCounter",
+                            "interactionType": "https://schema.org/CommentAction",
+                            "userInteractionCount": detail.num_comments
+                        }
+                    ]
+                })
+                .to_string();
+                (title, desc, Some(canonical), "article", Some(json_ld))
+            }
+            None => {
+                let title = self.title.clone();
+                let desc = format!(
+                    "Browse the latest {} on Hacker News. A lightning-fast modern Single Page Application built with Rust, Maud templates, and HTMX.",
+                    self.feed_type.label()
+                );
+                let canonical = if self.feed_type == FeedType::Top && self.search_query.is_empty() {
+                    Some("/".to_string())
+                } else {
+                    Some(format!("/?type={}", self.feed_type.as_str()))
+                };
+                let json_ld = serde_json::json!({
+                    "@context": "https://schema.org",
+                    "@type": "WebSite",
+                    "name": "Hacker News SPA",
+                    "url": "/",
+                    "description": "Lightning-fast modern Hacker News Single Page Application built with Rust, Maud, and HTMX.",
+                    "potentialAction": {
+                        "@type": "SearchAction",
+                        "target": "/search?q={search_term_string}",
+                        "query-input": "required name=search_term_string"
+                    }
+                })
+                .to_string();
+                (title, desc, canonical, "website", Some(json_ld))
+            }
+        };
+
         html! {
             (DOCTYPE)
             html lang="en" class="h-full bg-neutral-950 text-neutral-100 antialiased dark" {
                 head {
-                    (head(&self.title))
+                    (head(
+                        &title,
+                        &description,
+                        canonical_url.as_deref(),
+                        og_type,
+                        structured_data.as_deref(),
+                    ))
                 }
                 body class="h-full flex flex-col overflow-hidden bg-neutral-950 font-sans text-neutral-100 selection:bg-amber-500 selection:text-neutral-950" {
                     (navbar(self.active_feed, &self.search_query))
